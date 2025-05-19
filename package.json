@@ -1,0 +1,16 @@
+{
+    "name": "metadata-service-api",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "api": "npx @openapitools/openapi-generator-cli generate"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977",
+    "devDependencies": {
+        "@openapitools/openapi-generator-cli": "^2.20.0"
+    }
+}

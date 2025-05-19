@@ -1,0 +1,19 @@
+{
+    "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+    "spaces": 2,
+    "generator-cli": {
+        "version": "7.12.0",
+        "generators": {
+            "v1": {
+                "generatorName": "go",
+                "inputSpec": "./specs/v1.yaml",
+                "output": "./",
+                "additionalProperties": {
+                    "disallowAdditionalPropertiesIfNotPresent": false
+                },
+                "gitUserId": "Interhyp",
+                "gitRepoId": "metadata-service-api"
+            }
+        }
+    }
+}
