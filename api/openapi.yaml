@@ -1,0 +1,4402 @@
+openapi: 3.1.0
+info:
+  contact:
+    email: somebody@some-organisation.com
+    name: replace me
+    url: http://domain.com
+  description: "Obtain and manage metadata for owners, services, repositories. Please\
+    \ see [README](https://github.com/Interhyp/metadata-service/blob/main/README.md)\
+    \ for details. **CLIENTS MUST READ!**"
+  license:
+    name: (C) 2022 - Some Organisation
+    url: https://www.some-organisation.com/
+  title: Metadata
+  version: v1
+servers:
+- url: /
+tags:
+- name: /rest/api/v1/owners
+- name: /rest/api/v1/services
+- name: /rest/api/v1/repositories
+- name: management
+- name: webhook
+paths:
+  /rest/api/v1/owners:
+    get:
+      description: "Obtains all owners. Currently, no filtering is available."
+      operationId: getOwners
+      parameters: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerListDto'
+          description: Success
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+      summary: get owners
+      tags:
+      - /rest/api/v1/owners
+  /rest/api/v1/owners/{owner}:
+    delete:
+      description: Delete an owner - cannot have any services or repositories left
+      operationId: deleteOwner
+      parameters:
+      - explode: false
+        in: path
+        name: owner
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeletionDto'
+        required: true
+      responses:
+        "204":
+          description: No Content - successfully deleted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - an owner with this alias does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Conflict - this owner still owns something and cannot be deleted
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: delete the owner with a given alias
+      tags:
+      - /rest/api/v1/owners
+    get:
+      description: Obtains owner information for a single owner.
+      operationId: getOwner
+      parameters:
+      - explode: false
+        in: path
+        name: owner
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerDto'
+          description: Success
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Owner not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+      summary: get a single owner by alias
+      tags:
+      - /rest/api/v1/owners
+    patch:
+      description: Patch an owner.
+      operationId: patchOwner
+      parameters:
+      - explode: false
+        in: path
+        name: owner
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnerPatchDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerDto'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - an owner with this alias does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerDto'
+          description: "Conflict - concurrent update detected, please retry the operation\
+            \ based on the current commit hash and timestamp"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: patch an existing owner with a given alias
+      tags:
+      - /rest/api/v1/owners
+    post:
+      description: Create a new owner.
+      operationId: createOwner
+      parameters:
+      - explode: false
+        in: path
+        name: owner
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnerCreateDto'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerDto'
+          description: Created
+          headers:
+            Location:
+              example: /rest/api/v1/owners/some-owner
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: "Unable to parse input (invalid owner alias format, or the\
+            \ body failed to validate)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerDto'
+          description: Conflict - this owner alias already exists
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: create a new owner with a given alias
+      tags:
+      - /rest/api/v1/owners
+    put:
+      description: Update an owner.
+      operationId: updateOwner
+      parameters:
+      - explode: false
+        in: path
+        name: owner
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnerDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerDto'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - an owner with this alias does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OwnerDto'
+          description: "Conflict - concurrent update detected, please retry the operation\
+            \ based on the current commit hash and timestamp"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: update an existing owner with a given alias
+      tags:
+      - /rest/api/v1/owners
+  /rest/api/v1/services:
+    get:
+      description: "Obtains the list of services, possibly filtered by an owner alias."
+      operationId: getServices
+      parameters:
+      - description: "Allows filtering the output by owner alias. Valid aliases match\
+          \ `^[a-z](-?[a-z0-9]+)*$`."
+        example: some-owner
+        explode: true
+        in: query
+        name: owner
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceListDto'
+          description: Success
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Owner not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+      summary: get services
+      tags:
+      - /rest/api/v1/services
+  /rest/api/v1/services/{service}:
+    delete:
+      description: Delete a service. Will not delete associated repositories from
+        metadata.
+      operationId: deleteService
+      parameters:
+      - description: "The (globally unique) name of the service, must match `^[a-z](-?[a-z0-9]+)*$`."
+        explode: false
+        in: path
+        name: service
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeletionDto'
+        required: true
+      responses:
+        "204":
+          description: No Content - successfully deleted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - a service with this name does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: "Conflict - concurrent update detected, git change could not\
+            \ be pushed. Please retry the operation based on the current data"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: delete the service with a given name
+      tags:
+      - /rest/api/v1/services
+    get:
+      operationId: getService
+      parameters:
+      - description: "The (globally unique) name of the service, must match `^[a-z](-?[a-z0-9]+)*$`."
+        explode: false
+        in: path
+        name: service
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDto'
+          description: Success
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Service not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+      summary: get a single service by name
+      tags:
+      - /rest/api/v1/services
+    patch:
+      description: Patch a service.
+      operationId: patchService
+      parameters:
+      - description: "The (globally unique) name of the service, must match `^[a-z](-?[a-z0-9]+)*$`."
+        explode: false
+        in: path
+        name: service
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServicePatchDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDto'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - a service with this name does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDto'
+          description: "Conflict - concurrent update detected, please retry the operation\
+            \ based on the current commit hash and timestamp"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: patch an existing service with the given name
+      tags:
+      - /rest/api/v1/services
+    post:
+      description: Register a new service in the metadata.
+      operationId: registerService
+      parameters:
+      - description: "The (globally unique) name of the service, must match `^[a-z](-?[a-z0-9]+)*$`."
+        explode: false
+        in: path
+        name: service
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceCreateDto'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDto'
+          description: Created
+          headers:
+            Location:
+              example: /rest/api/v1/services/unicorn-finder-service
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: "Unable to parse input (invalid service name format, or the\
+            \ body failed to validate)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDto'
+          description: Conflict - this service name already exists (may be under a
+            different owner - service names are globally unique)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: register a new service with the given name
+      tags:
+      - /rest/api/v1/services
+    put:
+      description: Update a service.
+      operationId: updateService
+      parameters:
+      - description: "The (globally unique) name of the service, must match `^[a-z](-?[a-z0-9]+)*$`."
+        explode: false
+        in: path
+        name: service
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDto'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - a service with this name does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceDto'
+          description: "Conflict - concurrent update detected, please retry the operation\
+            \ based on the current commit hash and timestamp"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: update an existing service with the given name
+      tags:
+      - /rest/api/v1/services
+  /rest/api/v1/services/{service}/promoters:
+    get:
+      operationId: getServicePromoters
+      parameters:
+      - description: "The (globally unique) name of the service, must match `^[a-z](-?[a-z0-9]+)*$`."
+        explode: false
+        in: path
+        name: service
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePromotersDto'
+          description: Success
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Service not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+      summary: get all users who may promote a service
+      tags:
+      - /rest/api/v1/services
+  /rest/api/v1/repositories:
+    get:
+      description: "Obtain a list of repositories, potentially filtered by owner alias\
+        \ or service name"
+      operationId: getRepositoriesOfOwner
+      parameters:
+      - description: "Optional - allows filtering the output by repository url. Must\
+          \ match `^[a-z](-?:?@?.?\\/?[a-z0-9]+)*$`."
+        example: git@github.com:some-org/some-repo.git
+        explode: true
+        in: query
+        name: url
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Optional - the alias of an owner. If present, only repositories\
+          \ with this owner are returned. Must match `^[a-z](-?[a-z0-9]+)*$`."
+        example: some-owner
+        explode: true
+        in: query
+        name: owner
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Optional - the name of a service. If present, only repositories\
+          \ referenced by the given service are returned. Must match `^[a-z](-?[a-z0-9]+)*$`."
+        example: unicorn-finder-service
+        explode: true
+        in: query
+        name: service
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Optional - allows filtering the output by repository name (the\
+          \ first part of the key before the .). Must match `^[a-z](-?[a-z0-9]+)*$`."
+        example: some-service
+        explode: true
+        in: query
+        name: name
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: "Optional - allows filtering the output by repository type (the\
+          \ second part of the key after the .). Must currently be one of api, helm-chart,\
+          \ helm-deployment, implementation, terraform-module, javascript-module."
+        example: helm-chart
+        explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryListDto'
+          description: Success
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+      summary: get repositories
+      tags:
+      - /rest/api/v1/repositories
+  /rest/api/v1/repositories/{repository}:
+    delete:
+      description: "Delete a repository from metadata. Will not delete the actual\
+        \ repository, just the metadata."
+      operationId: removeRepository
+      parameters:
+      - example: unicorn-finder-service.implementation
+        explode: false
+        in: path
+        name: repository
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeletionDto'
+        required: true
+      responses:
+        "204":
+          description: No Content - successfully deleted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - a repository with this key does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: "Conflict - concurrent update detected, git change could not\
+            \ be pushed. Please retry the operation based on the current data"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: remove the repository with the given key
+      tags:
+      - /rest/api/v1/repositories
+    get:
+      operationId: getRepository
+      parameters:
+      - example: unicorn-finder-service.implementation
+        explode: false
+        in: path
+        name: repository
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryDto'
+          description: Success
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Owner or repository not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+      summary: get a single repository by key
+      tags:
+      - /rest/api/v1/repositories
+    patch:
+      description: Patch a repository.
+      operationId: patchRepository
+      parameters:
+      - example: unicorn-finder-service.implementation
+        explode: false
+        in: path
+        name: repository
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryPatchDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryDto'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - a repository with this key does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryDto'
+          description: "Conflict - concurrent update detected, please retry the operation\
+            \ based on the current commit hash and timestamp"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: patch an existing repository with the given key
+      tags:
+      - /rest/api/v1/repositories
+    post:
+      description: Register a new repository in the metadata. Note that this does
+        not actually create it.
+      operationId: registerRepository
+      parameters:
+      - example: unicorn-finder-service.implementation
+        explode: false
+        in: path
+        name: repository
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryCreateDto'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryDto'
+          description: Created
+          headers:
+            Location:
+              example: /rest/api/v1/repositories/unicorn-finder-service.implementation
+              explode: false
+              schema:
+                type: string
+              style: simple
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: "Unable to parse input (invalid repository key format, or the\
+            \ body failed to validate)"
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryDto'
+          description: Conflict - this repository key already exists (may be under
+            a different owner - repository keys are globally unique)
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: register a new repository with the given key
+      tags:
+      - /rest/api/v1/repositories
+    put:
+      description: Update a repository
+      operationId: updateRepository
+      parameters:
+      - example: unicorn-finder-service.implementation
+        explode: false
+        in: path
+        name: repository
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryDto'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unable to parse input (the body failed to validate)
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unauthorized (aka unauthenticated) - you need to provide the
+            Authorization header with a bearer token
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Forbidden (aka unauthorized) - your bearer token did not grant
+            you access to this operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Not Found - a repository with this key does not exist
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryDto'
+          description: "Conflict - concurrent update detected, please retry the operation\
+            \ based on the current commit hash and timestamp, or you tried to move\
+            \ a repository to another owner while a service refers to it, in this\
+            \ case, please move the service instead"
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Bad gateway - a downstream error occurred
+      security:
+      - bearerAuth: []
+      - basicAuth: []
+      summary: update an existing repository with the given key
+      tags:
+      - /rest/api/v1/repositories
+  /health:
+    get:
+      operationId: getHealth
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HealthComponent'
+          description: OK
+        "500":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Internal Server Error
+      tags:
+      - management
+  /management/health:
+    get:
+      operationId: getHealth_1
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HealthComponent'
+          description: OK
+        "500":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Internal Server Error
+      tags:
+      - management
+  /webhooks/vcs/github:
+    post:
+      operationId: postWebhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "204":
+          description: Success
+        "400":
+          description: Bad Request
+        "404":
+          description: Deployment Repository or Git Reference Not found
+        "422":
+          description: Bad Deployment Repository
+        "500":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Internal Server Error
+      tags:
+      - webhooks
+components:
+  schemas:
+    OwnerDto:
+      example:
+        timeStamp: timeStamp
+        jiraIssue: jiraIssue
+        displayName: displayName
+        contact: contact
+        members:
+        - members
+        - members
+        groups:
+          key:
+          - groups
+          - groups
+        links:
+        - title: title
+          url: url
+        - title: title
+          url: url
+        productOwner: productOwner
+        promoters:
+        - promoters
+        - promoters
+        defaultJiraProject: defaultJiraProject
+        commitHash: commitHash
+        teamsChannelURL: teamsChannelURL
+      properties:
+        contact:
+          description: The contact information of the owner
+          type: string
+        teamsChannelURL:
+          description: The teams channel url information of the owner
+          type: string
+        productOwner:
+          description: The product owner of this owner space
+          type: string
+        members:
+          description: A list of users which constitute this owner
+          items:
+            type: string
+          type: array
+        groups:
+          additionalProperties:
+            items:
+              type: string
+          description: "Collection of arbitrary user groups which can be referenced\
+            \ in service configurations. Map of string (group name e.g. some-owner)\
+            \ of strings (list of usernames), one username for each group is required."
+        promoters:
+          description: A list of users that are allowed to promote services in this
+            owner space
+          items:
+            description: The username of a user allowed to promote services in this
+              owner space
+            type: string
+          type: array
+        defaultJiraProject:
+          description: The default jira project that is used by this owner space
+          type: string
+        timeStamp:
+          description: "ISO-8601 UTC date time at which this information was originally\
+            \ committed. When sending an update, include the original timestamp you\
+            \ got so we can detect concurrent updates."
+          type: string
+        commitHash:
+          description: "The git commit hash this information was originally committed\
+            \ under. When sending an update, include the original commitHash you got\
+            \ so we can detect concurrent updates."
+          type: string
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+        displayName:
+          description: "A display name of the owner, to be presented in user interfaces\
+            \ instead of the owner's name, when available"
+          type: string
+        links:
+          items:
+            $ref: '#/components/schemas/Link'
+          type: array
+      required:
+      - commitHash
+      - contact
+      - jiraIssue
+      - timeStamp
+    OwnerCreateDto:
+      example:
+        jiraIssue: jiraIssue
+        displayName: displayName
+        contact: contact
+        members:
+        - members
+        - members
+        groups:
+          key:
+          - groups
+          - groups
+        links:
+        - title: title
+          url: url
+        - title: title
+          url: url
+        productOwner: productOwner
+        promoters:
+        - promoters
+        - promoters
+        defaultJiraProject: defaultJiraProject
+        teamsChannelURL: teamsChannelURL
+      properties:
+        contact:
+          description: The contact information of the owner
+          type: string
+        teamsChannelURL:
+          description: The teams channel url information of the owner
+          type: string
+        productOwner:
+          description: The product owner of this owner space
+          type: string
+        promoters:
+          description: A list of users that are allowed to promote services in this
+            owner space
+          items:
+            description: The username of a user allowed to promote services in this
+              owner space
+            type: string
+          type: array
+        members:
+          description: A list of users which constitute this owner
+          items:
+            type: string
+          type: array
+        groups:
+          additionalProperties:
+            items:
+              type: string
+          description: "Map of string (group name e.g. some-owner) of strings (list\
+            \ of usernames), one username for each group is required."
+        defaultJiraProject:
+          description: The default jira project that is used by this owner space
+          type: string
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+        displayName:
+          description: "A display name of the owner, to be presented in user interfaces\
+            \ instead of the owner's name, when available"
+          type: string
+        links:
+          items:
+            $ref: '#/components/schemas/Link'
+          type: array
+      required:
+      - contact
+      - jiraIssue
+    OwnerPatchDto:
+      example:
+        timeStamp: timeStamp
+        jiraIssue: jiraIssue
+        displayName: displayName
+        contact: contact
+        members:
+        - members
+        - members
+        groups:
+          key:
+          - groups
+          - groups
+        links:
+        - title: title
+          url: url
+        - title: title
+          url: url
+        productOwner: productOwner
+        promoters:
+        - promoters
+        - promoters
+        defaultJiraProject: defaultJiraProject
+        commitHash: commitHash
+        teamsChannelURL: teamsChannelURL
+      properties:
+        contact:
+          description: The contact information of the owner
+          type: string
+        teamsChannelURL:
+          description: The teams channel url information of the owner
+          type: string
+        productOwner:
+          description: The product owner of this owner space
+          type: string
+        members:
+          description: A list of users which constitute this owner
+          items:
+            type: string
+          type: array
+        groups:
+          additionalProperties:
+            items:
+              type: string
+          description: "Map of string (group name e.g. some-owner) of strings (list\
+            \ of usernames), one username for each group is required."
+        promoters:
+          description: A list of users that are allowed to promote services in this
+            owner space
+          items:
+            description: The username of a user allowed to promote services in this
+              owner space
+            type: string
+          type: array
+        defaultJiraProject:
+          description: The default jira project that is used by this owner space
+          type: string
+        timeStamp:
+          description: "ISO-8601 UTC date time at which this information was originally\
+            \ committed. When sending an update, include the original timestamp you\
+            \ got so we can detect concurrent updates."
+          type: string
+        commitHash:
+          description: "The git commit hash this information was originally committed\
+            \ under. When sending an update, include the original commitHash you got\
+            \ so we can detect concurrent updates."
+          type: string
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+        displayName:
+          description: "A display name of the owner, to be presented in user interfaces\
+            \ instead of the owner's name, when available"
+          type: string
+        links:
+          items:
+            $ref: '#/components/schemas/Link'
+          type: array
+      required:
+      - commitHash
+      - jiraIssue
+      - timeStamp
+    OwnerListDto:
+      example:
+        timeStamp: timeStamp
+        owners:
+          key:
+            timeStamp: timeStamp
+            jiraIssue: jiraIssue
+            displayName: displayName
+            contact: contact
+            members:
+            - members
+            - members
+            groups:
+              key:
+              - groups
+              - groups
+            links:
+            - title: title
+              url: url
+            - title: title
+              url: url
+            productOwner: productOwner
+            promoters:
+            - promoters
+            - promoters
+            defaultJiraProject: defaultJiraProject
+            commitHash: commitHash
+            teamsChannelURL: teamsChannelURL
+      properties:
+        owners:
+          additionalProperties:
+            $ref: '#/components/schemas/OwnerDto'
+        timeStamp:
+          description: ISO-8601 UTC date time at which the list of owners was obtained
+            from service-metadata
+          type: string
+      required:
+      - owners
+      - timeStamp
+    ServiceDto:
+      example:
+        owner: owner
+        quicklinks:
+        - url: /swagger-ui/index.html
+          title: SwaggerUI
+          description: Displays the frontend for the API.
+        - url: /swagger-ui/index.html
+          title: SwaggerUI
+          description: Displays the frontend for the API.
+        description: description
+        spec:
+          providesApis:
+          - providesApis
+          - providesApis
+          system: system
+          dependsOn:
+          - dependsOn
+          - dependsOn
+          consumesApis:
+          - consumesApis
+          - consumesApis
+        commitHash: commitHash
+        tags:
+        - tags
+        - tags
+        labels:
+          key: labels
+        timeStamp: timeStamp
+        lifecycle: experimental
+        alertTarget: alertTarget
+        jiraIssue: jiraIssue
+        repositories:
+        - repositories
+        - repositories
+        postPromotes:
+          binaries:
+          - versionPrefix: versionPrefix
+            groupId: groupId
+            classifier: classifier
+            artifactId: artifactId
+            fileType: fileType
+          - versionPrefix: versionPrefix
+            groupId: groupId
+            classifier: classifier
+            artifactId: artifactId
+            fileType: fileType
+        operationType: WORKLOAD
+        internetExposed: true
+      properties:
+        owner:
+          description: "The alias of the service owner. Note, an update with changed\
+            \ owner will move the service and any associated repositories to the new\
+            \ owner, but of course this will not move e.g. Jenkins jobs. That's your\
+            \ job."
+          type: string
+        description:
+          description: A short description of the functionality of the service.
+          type: string
+        quicklinks:
+          description: A list of quicklinks related to the service
+          items:
+            $ref: '#/components/schemas/Quicklink'
+          type: array
+        repositories:
+          description: "The keys of repositories associated with the service. When\
+            \ sending an update, they must refer to repositories that belong to this\
+            \ service, or the update will fail"
+          items:
+            description: The key of a repository associated with the service
+            type: string
+          type: array
+        alertTarget:
+          description: The default channel used to send any alerts of the service
+            to. Can be an email address or a Teams webhook URL
+          type: string
+        operationType:
+          default: WORKLOAD
+          description: "The operation type of the service. 'WORKLOAD' follows the\
+            \ default deployment strategy of one instance per environment, 'PLATFORM'\
+            \ one instance per cluster or node and 'APPLICATION' is a standalone application\
+            \ that is not deployed via the common strategies."
+          type: string
+          x-extensible-enum:
+          - WORKLOAD
+          - PLATFORM
+          - APPLICATION
+        internetExposed:
+          description: The value defines if the service is available from the internet
+            and the time period in which security holes must be processed.
+          type: boolean
+        tags:
+          items:
+            type: string
+          type: array
+        labels:
+          additionalProperties:
+            type: string
+        spec:
+          $ref: '#/components/schemas/ServiceSpecDto'
+        postPromotes:
+          $ref: '#/components/schemas/PostPromote'
+        timeStamp:
+          description: "ISO-8601 UTC date time at which this information was originally\
+            \ committed. When sending an update, include the original timestamp you\
+            \ got so we can detect concurrent updates."
+          type: string
+        commitHash:
+          description: "The git commit hash this information was originally committed\
+            \ under. When sending an update, include the original commitHash you got\
+            \ so we can detect concurrent updates."
+          type: string
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+        lifecycle:
+          description: "The current phase of the service's development. A service\
+            \ usually starts off as 'experimental', then becomes 'operational' (i.\
+            \ e. can be reliably used and/or consumed). Once 'deprecated', the service\
+            \ doesn’t guarantee reliable use/consumption any longer and if 'decommissionable',\
+            \ the service will soon cease to exist."
+          enum:
+          - experimental
+          - operational
+          - deprecated
+          - decommissionable
+          type: string
+      required:
+      - alertTarget
+      - commitHash
+      - jiraIssue
+      - owner
+      - quicklinks
+      - repositories
+      - timeStamp
+    ServiceCreateDto:
+      example:
+        owner: owner
+        alertTarget: alertTarget
+        quicklinks:
+        - url: /swagger-ui/index.html
+          title: SwaggerUI
+          description: Displays the frontend for the API.
+        - url: /swagger-ui/index.html
+          title: SwaggerUI
+          description: Displays the frontend for the API.
+        jiraIssue: jiraIssue
+        repositories:
+        - repositories
+        - repositories
+        postPromotes:
+          binaries:
+          - versionPrefix: versionPrefix
+            groupId: groupId
+            classifier: classifier
+            artifactId: artifactId
+            fileType: fileType
+          - versionPrefix: versionPrefix
+            groupId: groupId
+            classifier: classifier
+            artifactId: artifactId
+            fileType: fileType
+        description: description
+        operationType: WORKLOAD
+        spec:
+          providesApis:
+          - providesApis
+          - providesApis
+          system: system
+          dependsOn:
+          - dependsOn
+          - dependsOn
+          consumesApis:
+          - consumesApis
+          - consumesApis
+        internetExposed: true
+        tags:
+        - tags
+        - tags
+        labels:
+          key: labels
+      properties:
+        owner:
+          description: "The alias of the service owner. Note, an update with changed\
+            \ owner will move the service and any associated repositories to the new\
+            \ owner, but of course this will not move e.g. Jenkins jobs. That's your\
+            \ job."
+          type: string
+        description:
+          description: A short description of the functionality of the service.
+          type: string
+        quicklinks:
+          description: A list of quicklinks related to the service
+          items:
+            $ref: '#/components/schemas/Quicklink'
+          type: array
+        repositories:
+          description: "The keys of repositories associated with the service. When\
+            \ sending an update, they must refer to repositories that belong to this\
+            \ service, or the update will fail"
+          items:
+            description: The key of a repository associated with the service
+            type: string
+          type: array
+        alertTarget:
+          description: The default channel used to send any alerts of the service
+            to. Can be an email address or a Teams webhook URL
+          type: string
+        operationType:
+          default: WORKLOAD
+          description: "The operation type of the service. 'WORKLOAD' follows the\
+            \ default deployment strategy of one instance per environment, 'PLATFORM'\
+            \ one instance per cluster or node and 'APPLICATION' is a standalone application\
+            \ that is not deployed via the common strategies."
+          type: string
+          x-extensible-enum:
+          - WORKLOAD
+          - PLATFORM
+          - APPLICATION
+        internetExposed:
+          description: The value defines if the service is available from the internet
+            and the time period in which security holes must be processed.
+          type: boolean
+        tags:
+          items:
+            type: string
+          type: array
+        labels:
+          additionalProperties:
+            type: string
+        spec:
+          $ref: '#/components/schemas/ServiceSpecDto'
+        postPromotes:
+          $ref: '#/components/schemas/PostPromote'
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+      required:
+      - alertTarget
+      - jiraIssue
+      - owner
+      - quicklinks
+      - repositories
+    ServicePatchDto:
+      example:
+        owner: owner
+        quicklinks:
+        - url: /swagger-ui/index.html
+          title: SwaggerUI
+          description: Displays the frontend for the API.
+        - url: /swagger-ui/index.html
+          title: SwaggerUI
+          description: Displays the frontend for the API.
+        description: description
+        spec:
+          providesApis:
+          - providesApis
+          - providesApis
+          system: system
+          dependsOn:
+          - dependsOn
+          - dependsOn
+          consumesApis:
+          - consumesApis
+          - consumesApis
+        commitHash: commitHash
+        tags:
+        - tags
+        - tags
+        labels:
+          key: labels
+        timeStamp: timeStamp
+        lifecycle: experimental
+        alertTarget: alertTarget
+        jiraIssue: jiraIssue
+        repositories:
+        - repositories
+        - repositories
+        postPromotes:
+          binaries:
+          - versionPrefix: versionPrefix
+            groupId: groupId
+            classifier: classifier
+            artifactId: artifactId
+            fileType: fileType
+          - versionPrefix: versionPrefix
+            groupId: groupId
+            classifier: classifier
+            artifactId: artifactId
+            fileType: fileType
+        operationType: WORKLOAD
+        internetExposed: true
+      properties:
+        owner:
+          description: "The alias of the service owner. Note, a patch with changed\
+            \ owner will move the service and any associated repositories to the new\
+            \ owner, but of course this will not move e.g. Jenkins jobs. That's your\
+            \ job."
+          type: string
+        description:
+          description: A short description of the functionality of the service.
+          type: string
+        quicklinks:
+          description: A list of quicklinks related to the service
+          items:
+            $ref: '#/components/schemas/Quicklink'
+          type: array
+        repositories:
+          description: "The keys of repositories associated with the service. When\
+            \ sending an update, they must refer to repositories that belong to this\
+            \ service, or the update will fail"
+          items:
+            description: The key of a repository associated with the service
+            type: string
+          type: array
+        alertTarget:
+          description: The default channel used to send any alerts of the service
+            to. Can be an email address or a Teams webhook URL
+          type: string
+        operationType:
+          default: WORKLOAD
+          description: "The operation type of the service. 'WORKLOAD' follows the\
+            \ default deployment strategy of one instance per environment, 'PLATFORM'\
+            \ one instance per cluster or node and 'APPLICATION' is a standalone application\
+            \ that is not deployed via the common strategies."
+          type: string
+          x-extensible-enum:
+          - WORKLOAD
+          - PLATFORM
+          - APPLICATION
+        internetExposed:
+          description: The value defines if the service is available from the internet
+            and the time period in which security holes must be processed.
+          type: boolean
+        tags:
+          items:
+            type: string
+          type: array
+        labels:
+          additionalProperties:
+            type: string
+        spec:
+          $ref: '#/components/schemas/ServiceSpecDto'
+        postPromotes:
+          $ref: '#/components/schemas/PostPromote'
+        timeStamp:
+          description: "ISO-8601 UTC date time at which this information was originally\
+            \ committed. When sending an update, include the original timestamp you\
+            \ got so we can detect concurrent updates."
+          type: string
+        commitHash:
+          description: "The git commit hash this information was originally committed\
+            \ under. When sending an update, include the original commitHash you got\
+            \ so we can detect concurrent updates."
+          type: string
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+        lifecycle:
+          description: "The current phase of the service's development. A service\
+            \ usually starts off as 'experimental', then becomes 'operational' (i.\
+            \ e. can be reliably used and/or consumed). Once 'deprecated', the service\
+            \ doesn’t guarantee reliable use/consumption any longer."
+          enum:
+          - experimental
+          - operational
+          - deprecated
+          type: string
+      required:
+      - commitHash
+      - jiraIssue
+      - timeStamp
+    ServiceListDto:
+      example:
+        timeStamp: timeStamp
+        services:
+          key:
+            owner: owner
+            quicklinks:
+            - url: /swagger-ui/index.html
+              title: SwaggerUI
+              description: Displays the frontend for the API.
+            - url: /swagger-ui/index.html
+              title: SwaggerUI
+              description: Displays the frontend for the API.
+            description: description
+            spec:
+              providesApis:
+              - providesApis
+              - providesApis
+              system: system
+              dependsOn:
+              - dependsOn
+              - dependsOn
+              consumesApis:
+              - consumesApis
+              - consumesApis
+            commitHash: commitHash
+            tags:
+            - tags
+            - tags
+            labels:
+              key: labels
+            timeStamp: timeStamp
+            lifecycle: experimental
+            alertTarget: alertTarget
+            jiraIssue: jiraIssue
+            repositories:
+            - repositories
+            - repositories
+            postPromotes:
+              binaries:
+              - versionPrefix: versionPrefix
+                groupId: groupId
+                classifier: classifier
+                artifactId: artifactId
+                fileType: fileType
+              - versionPrefix: versionPrefix
+                groupId: groupId
+                classifier: classifier
+                artifactId: artifactId
+                fileType: fileType
+            operationType: WORKLOAD
+            internetExposed: true
+      properties:
+        services:
+          additionalProperties:
+            $ref: '#/components/schemas/ServiceDto'
+        timeStamp:
+          description: ISO-8601 UTC date time at which the list of services was obtained
+            from service-metadata
+          type: string
+      required:
+      - services
+      - timeStamp
+    ServicePromotersDto:
+      example:
+        promoters:
+        - promoters
+        - promoters
+      properties:
+        promoters:
+          items:
+            type: string
+          type: array
+      required:
+      - promoters
+    ServiceSpecDto:
+      example:
+        providesApis:
+        - providesApis
+        - providesApis
+        system: system
+        dependsOn:
+        - dependsOn
+        - dependsOn
+        consumesApis:
+        - consumesApis
+        - consumesApis
+      properties:
+        system:
+          description: A reference to the system that the component belongs to
+          type: string
+        dependsOn:
+          description: A relation denoting a dependency on another entity
+          items:
+            type: string
+          type: array
+        providesApis:
+          description: "A relation with an API, provided by this entity"
+          items:
+            type: string
+          type: array
+        consumesApis:
+          description: "A relation with an API, consumed by this entity"
+          items:
+            type: string
+          type: array
+    PostPromote:
+      example:
+        binaries:
+        - versionPrefix: versionPrefix
+          groupId: groupId
+          classifier: classifier
+          artifactId: artifactId
+          fileType: fileType
+        - versionPrefix: versionPrefix
+          groupId: groupId
+          classifier: classifier
+          artifactId: artifactId
+          fileType: fileType
+      properties:
+        binaries:
+          items:
+            $ref: '#/components/schemas/Binary'
+          type: array
+    Binary:
+      description: Parameters to identify a binary in e.g. nexus
+      example:
+        versionPrefix: versionPrefix
+        groupId: groupId
+        classifier: classifier
+        artifactId: artifactId
+        fileType: fileType
+      properties:
+        groupId:
+          description: The group id of binary
+          type: string
+        artifactId:
+          description: The artifact id of binary
+          type: string
+        versionPrefix:
+          description: The version prefix of binary
+          type: string
+        classifier:
+          description: The classifier of binary
+          type: string
+        fileType:
+          description: The file type of binary e.g. tar.gz
+          type: string
+      required:
+      - artifactId
+      - groupId
+      - versionPrefix
+    Notification:
+      description: Schema of the Dto sent to all configured downstreams upon a change
+        of service.
+      properties:
+        name:
+          description: name of the service that was updated
+          type: string
+        event:
+          enum:
+          - CREATED
+          - MODIFIED
+          - DELETED
+          type: string
+        type:
+          enum:
+          - Owner
+          - Service
+          - Repository
+          type: string
+        payload:
+          $ref: '#/components/schemas/Notification_payload'
+      required:
+      - event
+      - name
+      - type
+    Quicklink:
+      allOf:
+      - $ref: '#/components/schemas/Link'
+      - properties:
+          description:
+            type: string
+      example:
+        url: /swagger-ui/index.html
+        title: SwaggerUI
+        description: Displays the frontend for the API.
+    Link:
+      description: 'A link '
+      example:
+        title: title
+        url: url
+      properties:
+        url:
+          type: string
+        title:
+          type: string
+    RepositoryDto:
+      example:
+        owner: owner
+        timeStamp: timeStamp
+        jiraIssue: jiraIssue
+        configuration:
+          commitMessageRegex: commitMessageRegex
+          rawApprovers:
+            key:
+            - rawApprovers
+            - rawApprovers
+          approvers:
+            key:
+            - approvers
+            - approvers
+          watchers:
+          - watchers
+          - watchers
+          requireIssue: true
+          pullRequests:
+            allowRebaseMerging: true
+            allowMergeCommits: true
+          rawWatchers:
+          - rawWatchers
+          - rawWatchers
+          commitMessageType: DEFAULT
+          requireConditions:
+            key:
+              exemptions:
+              - exemptions
+              - exemptions
+              source: source
+              refMatcher: refMatcher
+          refProtections:
+            branches:
+              preventDeletion:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventPush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              requirePR:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventAllChanges:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventCreation:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventForcePush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+            tags:
+              preventDeletion:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventAllChanges:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventCreation:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventForcePush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+          requireSuccessfulBuilds: 0
+          archived: true
+          accessKeys:
+          - data: data
+            permission: REPO_READ
+            key: key
+          - data: data
+            permission: REPO_READ
+            key: key
+          excludeMergeCommits: true
+          excludeMergeCheckUsers:
+          - name: name
+          - name: name
+          webhooks:
+            additional:
+            - configuration:
+                key: configuration
+              name: name
+              url: url
+              events:
+              - events
+              - events
+            - configuration:
+                key: configuration
+              name: name
+              url: url
+              events:
+              - events
+              - events
+            predefined:
+            - predefined
+            - predefined
+          defaultTasks:
+          - text: text
+          - text: text
+          unmanaged: true
+          branchNameRegex: branchNameRegex
+          mergeConfig:
+            strategies:
+            - id: no-ff
+            - id: no-ff
+            defaultStrategy:
+              id: no-ff
+          requireApprovals: 6
+          actionsAccess: NOT_ACCESSIBLE
+        mainline: mainline
+        description: description
+        generator: generator
+        type: type
+        url: url
+        commitHash: commitHash
+        labels:
+          key: labels
+      properties:
+        type:
+          description: The type of the repository as determined by its key.
+          type: string
+        owner:
+          description: The alias of the repository owner
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+        mainline:
+          type: string
+        generator:
+          description: the generator used for the initial contents of this repository
+          type: string
+        configuration:
+          $ref: '#/components/schemas/RepositoryConfigurationDto'
+        timeStamp:
+          description: "ISO-8601 UTC date time at which this information was originally\
+            \ committed. When sending an update, include the original timestamp you\
+            \ got so we can detect concurrent updates."
+          type: string
+        commitHash:
+          description: "The git commit hash this information was originally committed\
+            \ under. When sending an update, include the original commitHash you got\
+            \ so we can detect concurrent updates."
+          type: string
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+        labels:
+          additionalProperties:
+            type: string
+          description: A map of arbitrary string labels attached to this repository.
+      required:
+      - commitHash
+      - jiraIssue
+      - mainline
+      - owner
+      - timeStamp
+      - url
+    RepositoryCreateDto:
+      example:
+        owner: owner
+        jiraIssue: jiraIssue
+        configuration:
+          commitMessageRegex: commitMessageRegex
+          rawApprovers:
+            key:
+            - rawApprovers
+            - rawApprovers
+          approvers:
+            key:
+            - approvers
+            - approvers
+          watchers:
+          - watchers
+          - watchers
+          requireIssue: true
+          pullRequests:
+            allowRebaseMerging: true
+            allowMergeCommits: true
+          rawWatchers:
+          - rawWatchers
+          - rawWatchers
+          commitMessageType: DEFAULT
+          requireConditions:
+            key:
+              exemptions:
+              - exemptions
+              - exemptions
+              source: source
+              refMatcher: refMatcher
+          refProtections:
+            branches:
+              preventDeletion:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventPush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              requirePR:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventAllChanges:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventCreation:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventForcePush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+            tags:
+              preventDeletion:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventAllChanges:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventCreation:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventForcePush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+          requireSuccessfulBuilds: 0
+          archived: true
+          accessKeys:
+          - data: data
+            permission: REPO_READ
+            key: key
+          - data: data
+            permission: REPO_READ
+            key: key
+          excludeMergeCommits: true
+          excludeMergeCheckUsers:
+          - name: name
+          - name: name
+          webhooks:
+            additional:
+            - configuration:
+                key: configuration
+              name: name
+              url: url
+              events:
+              - events
+              - events
+            - configuration:
+                key: configuration
+              name: name
+              url: url
+              events:
+              - events
+              - events
+            predefined:
+            - predefined
+            - predefined
+          defaultTasks:
+          - text: text
+          - text: text
+          unmanaged: true
+          branchNameRegex: branchNameRegex
+          mergeConfig:
+            strategies:
+            - id: no-ff
+            - id: no-ff
+            defaultStrategy:
+              id: no-ff
+          requireApprovals: 6
+          actionsAccess: NOT_ACCESSIBLE
+        mainline: mainline
+        generator: generator
+        url: url
+        labels:
+          key: labels
+      properties:
+        owner:
+          description: The alias of the repository owner
+          type: string
+        url:
+          type: string
+        mainline:
+          type: string
+        generator:
+          description: the generator used for the initial contents of this repository
+          type: string
+        configuration:
+          $ref: '#/components/schemas/RepositoryConfigurationDto'
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+        labels:
+          additionalProperties:
+            type: string
+          description: A map of arbitrary string labels attached to this repository.
+      required:
+      - jiraIssue
+      - mainline
+      - owner
+      - url
+    RepositoryPatchDto:
+      example:
+        owner: owner
+        timeStamp: timeStamp
+        jiraIssue: jiraIssue
+        configuration:
+          commitMessageRegex: commitMessageRegex
+          approvers:
+            key:
+            - approvers
+            - approvers
+          watchers:
+          - watchers
+          - watchers
+          requireIssue: true
+          pullRequests:
+            allowRebaseMerging: true
+            allowMergeCommits: true
+          commitMessageType: DEFAULT
+          requireConditions:
+            key:
+              exemptions:
+              - exemptions
+              - exemptions
+              source: source
+              refMatcher: refMatcher
+          refProtections:
+            branches:
+              preventDeletion:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventPush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              requirePR:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventAllChanges:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventCreation:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventForcePush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+            tags:
+              preventDeletion:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventAllChanges:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventCreation:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              preventForcePush:
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+              - exemptions:
+                - exemptions
+                - exemptions
+                pattern: pattern
+                exemptionsRoles:
+                - exemptionsRoles
+                - exemptionsRoles
+          requireSuccessfulBuilds: 0
+          archived: true
+          accessKeys:
+          - data: data
+            permission: REPO_READ
+            key: key
+          - data: data
+            permission: REPO_READ
+            key: key
+          excludeMergeCommits: true
+          excludeMergeCheckUsers:
+          - name: name
+          - name: name
+          webhooks:
+            additional:
+            - configuration:
+                key: configuration
+              name: name
+              url: url
+              events:
+              - events
+              - events
+            - configuration:
+                key: configuration
+              name: name
+              url: url
+              events:
+              - events
+              - events
+            predefined:
+            - predefined
+            - predefined
+          defaultTasks:
+          - text: text
+          - text: text
+          unmanaged: true
+          branchNameRegex: branchNameRegex
+          mergeConfig:
+            strategies:
+            - id: no-ff
+            - id: no-ff
+            defaultStrategy:
+              id: no-ff
+          requireApprovals: 6
+          actionsAccess: NOT_ACCESSIBLE
+        mainline: mainline
+        generator: generator
+        url: url
+        commitHash: commitHash
+        labels:
+          key: labels
+      properties:
+        owner:
+          description: The alias of the repository owner
+          type: string
+        url:
+          type: string
+        mainline:
+          type: string
+        generator:
+          description: the generator used for the initial contents of this repository
+          type: string
+        configuration:
+          $ref: '#/components/schemas/RepositoryConfigurationPatchDto'
+        timeStamp:
+          description: "ISO-8601 UTC date time at which this information was originally\
+            \ committed. When sending an update, include the original timestamp you\
+            \ got so we can detect concurrent updates."
+          type: string
+        commitHash:
+          description: "The git commit hash this information was originally committed\
+            \ under. When sending an update, include the original commitHash you got\
+            \ so we can detect concurrent updates."
+          type: string
+        jiraIssue:
+          description: "The jira issue to use for committing a change, or the last\
+            \ jira issue used."
+          type: string
+        labels:
+          additionalProperties:
+            type: string
+          description: A map of arbitrary string labels attached to this repository.
+      required:
+      - commitHash
+      - jiraIssue
+      - timeStamp
+    RepositoryListDto:
+      example:
+        timeStamp: timeStamp
+        repositories:
+          key:
+            owner: owner
+            timeStamp: timeStamp
+            jiraIssue: jiraIssue
+            configuration:
+              commitMessageRegex: commitMessageRegex
+              rawApprovers:
+                key:
+                - rawApprovers
+                - rawApprovers
+              approvers:
+                key:
+                - approvers
+                - approvers
+              watchers:
+              - watchers
+              - watchers
+              requireIssue: true
+              pullRequests:
+                allowRebaseMerging: true
+                allowMergeCommits: true
+              rawWatchers:
+              - rawWatchers
+              - rawWatchers
+              commitMessageType: DEFAULT
+              requireConditions:
+                key:
+                  exemptions:
+                  - exemptions
+                  - exemptions
+                  source: source
+                  refMatcher: refMatcher
+              refProtections:
+                branches:
+                  preventDeletion:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  preventPush:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  requirePR:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  preventAllChanges:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  preventCreation:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  preventForcePush:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                tags:
+                  preventDeletion:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  preventAllChanges:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  preventCreation:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  preventForcePush:
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+                  - exemptions:
+                    - exemptions
+                    - exemptions
+                    pattern: pattern
+                    exemptionsRoles:
+                    - exemptionsRoles
+                    - exemptionsRoles
+              requireSuccessfulBuilds: 0
+              archived: true
+              accessKeys:
+              - data: data
+                permission: REPO_READ
+                key: key
+              - data: data
+                permission: REPO_READ
+                key: key
+              excludeMergeCommits: true
+              excludeMergeCheckUsers:
+              - name: name
+              - name: name
+              webhooks:
+                additional:
+                - configuration:
+                    key: configuration
+                  name: name
+                  url: url
+                  events:
+                  - events
+                  - events
+                - configuration:
+                    key: configuration
+                  name: name
+                  url: url
+                  events:
+                  - events
+                  - events
+                predefined:
+                - predefined
+                - predefined
+              defaultTasks:
+              - text: text
+              - text: text
+              unmanaged: true
+              branchNameRegex: branchNameRegex
+              mergeConfig:
+                strategies:
+                - id: no-ff
+                - id: no-ff
+                defaultStrategy:
+                  id: no-ff
+              requireApprovals: 6
+              actionsAccess: NOT_ACCESSIBLE
+            mainline: mainline
+            description: description
+            generator: generator
+            type: type
+            url: url
+            commitHash: commitHash
+            labels:
+              key: labels
+      properties:
+        repositories:
+          additionalProperties:
+            $ref: '#/components/schemas/RepositoryDto'
+        timeStamp:
+          description: ISO-8601 UTC date time at which the list of repositories was
+            obtained from service-metadata
+          type: string
+      required:
+      - repositories
+      - timeStamp
+    DeletionDto:
+      example:
+        jiraIssue: jiraIssue
+      properties:
+        jiraIssue:
+          description: The jira issue to use for committing the deletion.
+          type: string
+      required:
+      - jiraIssue
+    RepositoryConfigurationDto:
+      description: Attributes to configure the repository. If a configuration exists
+        there are also some configured defaults for the repository.
+      example:
+        commitMessageRegex: commitMessageRegex
+        rawApprovers:
+          key:
+          - rawApprovers
+          - rawApprovers
+        approvers:
+          key:
+          - approvers
+          - approvers
+        watchers:
+        - watchers
+        - watchers
+        requireIssue: true
+        pullRequests:
+          allowRebaseMerging: true
+          allowMergeCommits: true
+        rawWatchers:
+        - rawWatchers
+        - rawWatchers
+        commitMessageType: DEFAULT
+        requireConditions:
+          key:
+            exemptions:
+            - exemptions
+            - exemptions
+            source: source
+            refMatcher: refMatcher
+        refProtections:
+          branches:
+            preventDeletion:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventPush:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            requirePR:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventAllChanges:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventCreation:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventForcePush:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+          tags:
+            preventDeletion:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventAllChanges:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventCreation:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventForcePush:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+        requireSuccessfulBuilds: 0
+        archived: true
+        accessKeys:
+        - data: data
+          permission: REPO_READ
+          key: key
+        - data: data
+          permission: REPO_READ
+          key: key
+        excludeMergeCommits: true
+        excludeMergeCheckUsers:
+        - name: name
+        - name: name
+        webhooks:
+          additional:
+          - configuration:
+              key: configuration
+            name: name
+            url: url
+            events:
+            - events
+            - events
+          - configuration:
+              key: configuration
+            name: name
+            url: url
+            events:
+            - events
+            - events
+          predefined:
+          - predefined
+          - predefined
+        defaultTasks:
+        - text: text
+        - text: text
+        unmanaged: true
+        branchNameRegex: branchNameRegex
+        mergeConfig:
+          strategies:
+          - id: no-ff
+          - id: no-ff
+          defaultStrategy:
+            id: no-ff
+        requireApprovals: 6
+        actionsAccess: NOT_ACCESSIBLE
+      properties:
+        accessKeys:
+          description: Ssh-Keys configured on the repository.
+          items:
+            $ref: '#/components/schemas/RepositoryConfigurationAccessKeyDto'
+          type: array
+        mergeConfig:
+          $ref: '#/components/schemas/RepositoryConfigurationDto_mergeConfig'
+        defaultTasks:
+          items:
+            $ref: '#/components/schemas/RepositoryConfigurationDefaultTaskDto'
+          type: array
+        branchNameRegex:
+          description: Use an explicit branch name regex.
+          type: string
+        commitMessageRegex:
+          description: Use an explicit commit message regex.
+          type: string
+        commitMessageType:
+          description: Adds a corresponding commit message regex.
+          enum:
+          - DEFAULT
+          - SEMANTIC
+          - SNOW_AND_INCIDENTS
+          type: string
+        requireSuccessfulBuilds:
+          description: Set the required successful builds counter.
+          type: integer
+        requireApprovals:
+          description: Set the required approvals counter.
+          type: integer
+        excludeMergeCommits:
+          description: Exclude merge commits from commit checks.
+          type: boolean
+        excludeMergeCheckUsers:
+          description: Exclude users from commit checks.
+          items:
+            $ref: '#/components/schemas/ExcludeMergeCheckUserDto'
+          type: array
+        webhooks:
+          $ref: '#/components/schemas/RepositoryConfigurationWebhooksDto'
+        approvers:
+          additionalProperties:
+            items:
+              type: string
+          description: "Map of string (group name e.g. some-owner) of strings (list\
+            \ of approvers), one approval for each group is required."
+        rawApprovers:
+          additionalProperties:
+            items:
+              type: string
+          description: Raw data of approvers
+        watchers:
+          description: "List of strings (list of watchers, either usernames or group\
+            \ identifier), which are added as reviewers but require no approval."
+          items:
+            type: string
+          type: array
+        rawWatchers:
+          description: Raw data of watchers
+          items:
+            type: string
+          type: array
+        archived:
+          description: Moves the repository into the archive.
+          type: boolean
+        unmanaged:
+          description: "Repository will not be configured, also not archived."
+          type: boolean
+        refProtections:
+          $ref: '#/components/schemas/RefProtections'
+        pullRequests:
+          $ref: '#/components/schemas/PullRequests'
+        requireIssue:
+          description: "Configures JQL matcher with query: issuetype in (Story, Bug)\
+            \ AND 'Risk Level' is not EMPTY"
+          type: boolean
+        requireConditions:
+          additionalProperties:
+            $ref: '#/components/schemas/ConditionReferenceDto'
+          description: Configuration of conditional builds as map of structs (key
+            name e.g. some-key) of target references.
+        actionsAccess:
+          description: Control how the repository is used by GitHub Actions workflows
+            in other repositories
+          enum:
+          - NONE
+          - ORGANIZATION
+          - ENTERPRISE
+          example: NOT_ACCESSIBLE
+          type: string
+    RepositoryConfigurationPatchDto:
+      description: Attributes to configure the repository. If a configuration exists
+        there are also some configured defaults for the repository.
+      example:
+        commitMessageRegex: commitMessageRegex
+        approvers:
+          key:
+          - approvers
+          - approvers
+        watchers:
+        - watchers
+        - watchers
+        requireIssue: true
+        pullRequests:
+          allowRebaseMerging: true
+          allowMergeCommits: true
+        commitMessageType: DEFAULT
+        requireConditions:
+          key:
+            exemptions:
+            - exemptions
+            - exemptions
+            source: source
+            refMatcher: refMatcher
+        refProtections:
+          branches:
+            preventDeletion:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventPush:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            requirePR:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventAllChanges:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventCreation:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventForcePush:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+          tags:
+            preventDeletion:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventAllChanges:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventCreation:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            preventForcePush:
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+            - exemptions:
+              - exemptions
+              - exemptions
+              pattern: pattern
+              exemptionsRoles:
+              - exemptionsRoles
+              - exemptionsRoles
+        requireSuccessfulBuilds: 0
+        archived: true
+        accessKeys:
+        - data: data
+          permission: REPO_READ
+          key: key
+        - data: data
+          permission: REPO_READ
+          key: key
+        excludeMergeCommits: true
+        excludeMergeCheckUsers:
+        - name: name
+        - name: name
+        webhooks:
+          additional:
+          - configuration:
+              key: configuration
+            name: name
+            url: url
+            events:
+            - events
+            - events
+          - configuration:
+              key: configuration
+            name: name
+            url: url
+            events:
+            - events
+            - events
+          predefined:
+          - predefined
+          - predefined
+        defaultTasks:
+        - text: text
+        - text: text
+        unmanaged: true
+        branchNameRegex: branchNameRegex
+        mergeConfig:
+          strategies:
+          - id: no-ff
+          - id: no-ff
+          defaultStrategy:
+            id: no-ff
+        requireApprovals: 6
+        actionsAccess: NOT_ACCESSIBLE
+      properties:
+        accessKeys:
+          description: Ssh-Keys configured on the repository.
+          items:
+            $ref: '#/components/schemas/RepositoryConfigurationAccessKeyDto'
+          type: array
+        mergeConfig:
+          $ref: '#/components/schemas/RepositoryConfigurationDto_mergeConfig'
+        defaultTasks:
+          items:
+            $ref: '#/components/schemas/RepositoryConfigurationDefaultTaskDto'
+          type: array
+        branchNameRegex:
+          description: Use an explicit branch name regex.
+          type: string
+        commitMessageRegex:
+          description: Use an explicit commit message regex.
+          type: string
+        commitMessageType:
+          description: Adds a corresponding commit message regex.
+          enum:
+          - DEFAULT
+          - SEMANTIC
+          - SNOW_AND_INCIDENTS
+          type: string
+        requireSuccessfulBuilds:
+          description: Set the required successful builds counter.
+          type: integer
+        requireApprovals:
+          description: Set the required approvals counter.
+          type: integer
+        excludeMergeCommits:
+          description: Exclude merge commits from commit checks.
+          type: boolean
+        excludeMergeCheckUsers:
+          description: Exclude users from commit checks.
+          items:
+            $ref: '#/components/schemas/ExcludeMergeCheckUserDto'
+          type: array
+        webhooks:
+          $ref: '#/components/schemas/RepositoryConfigurationWebhooksDto'
+        approvers:
+          additionalProperties:
+            items:
+              type: string
+          description: "Map of string (group name e.g. some-owner) of strings (list\
+            \ of approvers), one approval for each group is required."
+        watchers:
+          description: "List of strings (list of watchers, either usernames or group\
+            \ identifier), which are added as reviewers but require no approval."
+          items:
+            type: string
+          type: array
+        archived:
+          description: Moves the repository into the archive.
+          type: boolean
+        unmanaged:
+          description: "Repository will not be configured, also not archived."
+          type: boolean
+        refProtections:
+          $ref: '#/components/schemas/RefProtections'
+        requireIssue:
+          description: "Configures JQL matcher with query: issuetype in (Story, Bug)\
+            \ AND 'Risk Level' is not EMPTY"
+          type: boolean
+        requireConditions:
+          additionalProperties:
+            $ref: '#/components/schemas/ConditionReferenceDto'
+          description: Configuration of conditional builds as map of structs (key
+            name e.g. some-key) of target references.
+        actionsAccess:
+          description: Control how the repository is used by GitHub Actions workflows
+            in other repositories
+          enum:
+          - NONE
+          - ORGANIZATION
+          - ENTERPRISE
+          example: NOT_ACCESSIBLE
+          type: string
+        pullRequests:
+          $ref: '#/components/schemas/PullRequests'
+    MergeStrategy:
+      additionalProperties: false
+      example:
+        id: no-ff
+      properties:
+        id:
+          enum:
+          - no-ff
+          - ff
+          - ff-only
+          - squash
+          - squash-ff-only
+          - rebase-no-ff
+          - rebase-ff-only
+          type: string
+      required:
+      - id
+      title: Strategy
+    RepositoryConfigurationAccessKeyDto:
+      example:
+        data: data
+        permission: REPO_READ
+        key: key
+      properties:
+        key:
+          type: string
+        data:
+          type: string
+        permission:
+          enum:
+          - REPO_READ
+          - REPO_WRITE
+          type: string
+    RepositoryConfigurationDefaultTaskDto:
+      example:
+        text: text
+      properties:
+        text:
+          type: string
+      required:
+      - text
+    ConditionReferenceDto:
+      description: Configuration of conditional build references.
+      example:
+        exemptions:
+        - exemptions
+        - exemptions
+        source: source
+        refMatcher: refMatcher
+      properties:
+        refMatcher:
+          description: Reference of a branch.
+          type: string
+        exemptions:
+          description: list of users or groups for which this protection does not
+            apply.
+          items:
+            description: A user or group. Groups are denoted by @<OWNERNAME>.<GROUPNAME>.
+            type: string
+          type: array
+        source:
+          description: The expected source for the required conditional build.
+          type: string
+      required:
+      - refMatcher
+    ExcludeMergeCheckUserDto:
+      example:
+        name: name
+      properties:
+        name:
+          description: Name of merge check exclude user
+          type: string
+      required:
+      - name
+    RepositoryConfigurationWebhooksDto:
+      description: Webhooks configured to the repository.
+      example:
+        additional:
+        - configuration:
+            key: configuration
+          name: name
+          url: url
+          events:
+          - events
+          - events
+        - configuration:
+            key: configuration
+          name: name
+          url: url
+          events:
+          - events
+          - events
+        predefined:
+        - predefined
+        - predefined
+      properties:
+        predefined:
+          description: List of predefined webhooks
+          items:
+            type: string
+          type: array
+        additional:
+          description: Additional webhooks to be configured.
+          items:
+            $ref: '#/components/schemas/RepositoryConfigurationWebhookDto'
+          type: array
+    RepositoryConfigurationWebhookDto:
+      example:
+        configuration:
+          key: configuration
+        name: name
+        url: url
+        events:
+        - events
+        - events
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        events:
+          description: Events the webhook should be triggered with.
+          items:
+            type: string
+          type: array
+        configuration:
+          additionalProperties:
+            type: string
+      required:
+      - name
+      - url
+    PullRequests:
+      description: Configures pull request settings
+      example:
+        allowRebaseMerging: true
+        allowMergeCommits: true
+      properties:
+        allowMergeCommits:
+          default: true
+          description: Allows merge commits on pull requests
+          type: boolean
+        allowRebaseMerging:
+          default: true
+          description: Allows rebase merging on pull requests
+          type: boolean
+    RefProtections:
+      description: Configures available protections for git refs
+      example:
+        branches:
+          preventDeletion:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          preventPush:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          requirePR:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          preventAllChanges:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          preventCreation:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          preventForcePush:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+        tags:
+          preventDeletion:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          preventAllChanges:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          preventCreation:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          preventForcePush:
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+          - exemptions:
+            - exemptions
+            - exemptions
+            pattern: pattern
+            exemptionsRoles:
+            - exemptionsRoles
+            - exemptionsRoles
+      properties:
+        branches:
+          $ref: '#/components/schemas/RefProtections_branches'
+        tags:
+          $ref: '#/components/schemas/RefProtections_tags'
+    ProtectedRef:
+      example:
+        exemptions:
+        - exemptions
+        - exemptions
+        pattern: pattern
+        exemptionsRoles:
+        - exemptionsRoles
+        - exemptionsRoles
+      properties:
+        pattern:
+          description: "fnmatch pattern to define protected refs. Must not start with\
+            \ refs/heads/ or refs/tags/. Special value :MAINLINE: matches the currently\
+            \ configured mainline for branch protections."
+          pattern: ^(?!refs\/(heads|tags)\/).*$
+          type: string
+        exemptions:
+          description: list of users or groups for which this protection does not
+            apply.
+          items:
+            description: A user or a group identifier. Groups are identified by @<OWNERNAME>.<GROUPNAME>.
+              Group identifiers will be resolved for this field during read operations.
+            type: string
+          type: array
+        exemptionsRoles:
+          description: list of group identifiers for which this protection does not
+            apply. This field is read-only and will be filled automatically from the
+            exemptions fields.
+          items:
+            description: A group identifier. Groups are identified by @<OWNERNAME>.<GROUPNAME>.
+            type: string
+          type: array
+      required:
+      - pattern
+    ErrorDto:
+      example:
+        details: details
+        message: message
+        timestamp: 2000-01-23T04:56:07.000+00:00
+      properties:
+        details:
+          type: string
+        message:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+    HealthComponent:
+      example:
+        description: description
+        status: status
+      properties:
+        description:
+          type: string
+        status:
+          type: string
+    Notification_payload:
+      maxProperties: 1
+      minProperties: 1
+      properties:
+        Owner:
+          $ref: '#/components/schemas/OwnerDto'
+        Service:
+          $ref: '#/components/schemas/ServiceDto'
+        Repository:
+          $ref: '#/components/schemas/RepositoryDto'
+    RepositoryConfigurationDto_mergeConfig:
+      example:
+        strategies:
+        - id: no-ff
+        - id: no-ff
+        defaultStrategy:
+          id: no-ff
+      properties:
+        defaultStrategy:
+          $ref: '#/components/schemas/MergeStrategy'
+        strategies:
+          items:
+            $ref: '#/components/schemas/MergeStrategy'
+          type: array
+    RefProtections_branches:
+      example:
+        preventDeletion:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        preventPush:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        requirePR:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        preventAllChanges:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        preventCreation:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        preventForcePush:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+      properties:
+        requirePR:
+          description: Forces creating a PR to update the protected refs.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+        preventAllChanges:
+          description: Prevents all changes of the protected refs.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+        preventCreation:
+          description: Prevents creation of the protected refs.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+        preventDeletion:
+          description: Prevents deletion of the protected refs.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+        preventPush:
+          description: Prevents pushes to the protected refs.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+        preventForcePush:
+          description: Prevents force pushes to the protected refs for users with
+            push permission.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+    RefProtections_tags:
+      example:
+        preventDeletion:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        preventAllChanges:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        preventCreation:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        preventForcePush:
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+        - exemptions:
+          - exemptions
+          - exemptions
+          pattern: pattern
+          exemptionsRoles:
+          - exemptionsRoles
+          - exemptionsRoles
+      properties:
+        preventAllChanges:
+          description: Prevents all changes of the protected refs.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+        preventCreation:
+          description: Prevents creation of the protected refs.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+        preventDeletion:
+          description: Prevents deletion of the protected refs.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+        preventForcePush:
+          description: Prevents force pushes to the protected refs for users with
+            push permission.
+          items:
+            $ref: '#/components/schemas/ProtectedRef'
+          type: array
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+    basicAuth:
+      scheme: basic
+      type: http
