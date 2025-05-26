@@ -26,6 +26,7 @@ Name | Type | Description | Notes
 **RequireIssue** | Pointer to **bool** | Configures JQL matcher with query: issuetype in (Story, Bug) AND &#39;Risk Level&#39; is not EMPTY | [optional] 
 **RequireConditions** | Pointer to [**map[string]ConditionReferenceDto**](ConditionReferenceDto.md) | Configuration of conditional builds as map of structs (key name e.g. some-key) of target references. | [optional] 
 **ActionsAccess** | Pointer to **string** | Control how the repository is used by GitHub Actions workflows in other repositories | [optional] 
+**CustomProperties** | Pointer to **map[string]interface{}** | Custom properties for this repository | [optional] 
 
 ## Methods
 
@@ -595,6 +596,31 @@ SetActionsAccess sets ActionsAccess field to given value.
 `func (o *RepositoryConfigurationDto) HasActionsAccess() bool`
 
 HasActionsAccess returns a boolean if a field has been set.
+
+### GetCustomProperties
+
+`func (o *RepositoryConfigurationDto) GetCustomProperties() map[string]interface{}`
+
+GetCustomProperties returns the CustomProperties field if non-nil, zero value otherwise.
+
+### GetCustomPropertiesOk
+
+`func (o *RepositoryConfigurationDto) GetCustomPropertiesOk() (*map[string]interface{}, bool)`
+
+GetCustomPropertiesOk returns a tuple with the CustomProperties field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetCustomProperties
+
+`func (o *RepositoryConfigurationDto) SetCustomProperties(v map[string]interface{})`
+
+SetCustomProperties sets CustomProperties field to given value.
+
+### HasCustomProperties
+
+`func (o *RepositoryConfigurationDto) HasCustomProperties() bool`
+
+HasCustomProperties returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

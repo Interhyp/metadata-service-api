@@ -59,6 +59,8 @@ type RepositoryConfigurationDto struct {
 	RequireConditions map[string]ConditionReferenceDto `json:"requireConditions,omitempty"`
 	// Control how the repository is used by GitHub Actions workflows in other repositories
 	ActionsAccess *string `json:"actionsAccess,omitempty"`
+	// Custom properties for this repository
+	CustomProperties map[string]interface{} `json:"customProperties,omitempty"`
 	AdditionalProperties map[string]interface{}
 }
 
@@ -785,6 +787,38 @@ func (o *RepositoryConfigurationDto) SetActionsAccess(v string) {
 	o.ActionsAccess = &v
 }
 
+// GetCustomProperties returns the CustomProperties field value if set, zero value otherwise.
+func (o *RepositoryConfigurationDto) GetCustomProperties() map[string]interface{} {
+	if o == nil || IsNil(o.CustomProperties) {
+		var ret map[string]interface{}
+		return ret
+	}
+	return o.CustomProperties
+}
+
+// GetCustomPropertiesOk returns a tuple with the CustomProperties field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *RepositoryConfigurationDto) GetCustomPropertiesOk() (map[string]interface{}, bool) {
+	if o == nil || IsNil(o.CustomProperties) {
+		return map[string]interface{}{}, false
+	}
+	return o.CustomProperties, true
+}
+
+// HasCustomProperties returns a boolean if a field has been set.
+func (o *RepositoryConfigurationDto) HasCustomProperties() bool {
+	if o != nil && !IsNil(o.CustomProperties) {
+		return true
+	}
+
+	return false
+}
+
+// SetCustomProperties gets a reference to the given map[string]interface{} and assigns it to the CustomProperties field.
+func (o *RepositoryConfigurationDto) SetCustomProperties(v map[string]interface{}) {
+	o.CustomProperties = v
+}
+
 func (o RepositoryConfigurationDto) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -861,6 +895,9 @@ func (o RepositoryConfigurationDto) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ActionsAccess) {
 		toSerialize["actionsAccess"] = o.ActionsAccess
 	}
+	if !IsNil(o.CustomProperties) {
+		toSerialize["customProperties"] = o.CustomProperties
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
@@ -905,6 +942,7 @@ func (o *RepositoryConfigurationDto) UnmarshalJSON(data []byte) (err error) {
 		delete(additionalProperties, "requireIssue")
 		delete(additionalProperties, "requireConditions")
 		delete(additionalProperties, "actionsAccess")
+		delete(additionalProperties, "customProperties")
 		o.AdditionalProperties = additionalProperties
 	}
 

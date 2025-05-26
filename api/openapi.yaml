@@ -2305,6 +2305,7 @@ components:
           excludeMergeCheckUsers:
           - name: name
           - name: name
+          customProperties: "{}"
           webhooks:
             additional:
             - configuration:
@@ -2586,6 +2587,7 @@ components:
           excludeMergeCheckUsers:
           - name: name
           - name: name
+          customProperties: "{}"
           webhooks:
             additional:
             - configuration:
@@ -2841,6 +2843,7 @@ components:
           excludeMergeCheckUsers:
           - name: name
           - name: name
+          customProperties: "{}"
           webhooks:
             additional:
             - configuration:
@@ -3116,6 +3119,7 @@ components:
               excludeMergeCheckUsers:
               - name: name
               - name: name
+              customProperties: "{}"
               webhooks:
                 additional:
                 - configuration:
@@ -3373,6 +3377,7 @@ components:
         excludeMergeCheckUsers:
         - name: name
         - name: name
+        customProperties: "{}"
         webhooks:
           additional:
           - configuration:
@@ -3496,6 +3501,10 @@ components:
           - ENTERPRISE
           example: NOT_ACCESSIBLE
           type: string
+        customProperties:
+          additionalProperties: false
+          description: Custom properties for this repository
+          type: object
     RepositoryConfigurationPatchDto:
       description: Attributes to configure the repository. If a configuration exists
         there are also some configured defaults for the repository.
@@ -3686,6 +3695,7 @@ components:
         excludeMergeCheckUsers:
         - name: name
         - name: name
+        customProperties: "{}"
         webhooks:
           additional:
           - configuration:
@@ -3799,6 +3809,10 @@ components:
           type: string
         pullRequests:
           $ref: '#/components/schemas/PullRequests'
+        customProperties:
+          additionalProperties: false
+          description: Custom properties for this repository
+          type: object
     MergeStrategy:
       additionalProperties: false
       example:
