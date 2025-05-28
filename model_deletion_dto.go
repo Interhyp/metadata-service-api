@@ -22,7 +22,7 @@ var _ MappedNullable = &DeletionDto{}
 // DeletionDto struct for DeletionDto
 type DeletionDto struct {
 	// The jira issue to use for committing the deletion.
-	JiraIssue string `json:"jiraIssue"`
+	JiraIssue string `json:"jiraIssue" yaml:"-"`
 	AdditionalProperties map[string]interface{}
 }
 

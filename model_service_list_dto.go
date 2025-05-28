@@ -23,7 +23,7 @@ var _ MappedNullable = &ServiceListDto{}
 type ServiceListDto struct {
 	Services map[string]ServiceDto `json:"services"`
 	// ISO-8601 UTC date time at which the list of services was obtained from service-metadata
-	TimeStamp string `json:"timeStamp"`
+	TimeStamp string `json:"timeStamp" yaml:"-"`
 	AdditionalProperties map[string]interface{}
 }
 

@@ -23,11 +23,11 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
-      - run: pnpm api
+      - run: pnpm generate:api
       - name: Check for API spec changes
         run: |
           if [[ $(git status --porcelain) ]]; then
-            echo "API spec is outdated. Please run 'npm run api' locally and commit the changes."
+            echo "API spec is outdated. Please run 'npm run generate:api' locally and commit the changes."
             exit 1
           fi
 

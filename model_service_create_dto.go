@@ -22,7 +22,7 @@ var _ MappedNullable = &ServiceCreateDto{}
 // ServiceCreateDto struct for ServiceCreateDto
 type ServiceCreateDto struct {
 	// The alias of the service owner. Note, an update with changed owner will move the service and any associated repositories to the new owner, but of course this will not move e.g. Jenkins jobs. That's your job.
-	Owner string `json:"owner"`
+	Owner string `json:"owner" yaml:"-"`
 	// A short description of the functionality of the service.
 	Description *string `json:"description,omitempty"`
 	// A list of quicklinks related to the service
@@ -41,7 +41,7 @@ type ServiceCreateDto struct {
 	// Post promote dependencies.
 	PostPromotes *PostPromote `json:"postPromotes,omitempty"`
 	// The jira issue to use for committing a change, or the last jira issue used.
-	JiraIssue string `json:"jiraIssue"`
+	JiraIssue string `json:"jiraIssue" yaml:"-"`
 	AdditionalProperties map[string]interface{}
 }
 
