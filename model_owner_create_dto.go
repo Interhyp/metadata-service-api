@@ -36,7 +36,7 @@ type OwnerCreateDto struct {
 	// The default jira project that is used by this owner space
 	DefaultJiraProject *string `json:"defaultJiraProject,omitempty"`
 	// The jira issue to use for committing a change, or the last jira issue used.
-	JiraIssue string `json:"jiraIssue"`
+	JiraIssue string `json:"jiraIssue" yaml:"-"`
 	// A display name of the owner, to be presented in user interfaces instead of the owner's name, when available
 	DisplayName *string `json:"displayName,omitempty"`
 	Links []Link `json:"links,omitempty"`

@@ -23,7 +23,7 @@ var _ MappedNullable = &OwnerListDto{}
 type OwnerListDto struct {
 	Owners map[string]OwnerDto `json:"owners"`
 	// ISO-8601 UTC date time at which the list of owners was obtained from service-metadata
-	TimeStamp string `json:"timeStamp"`
+	TimeStamp string `json:"timeStamp" yaml:"-"`
 	AdditionalProperties map[string]interface{}
 }
 

@@ -22,14 +22,14 @@ var _ MappedNullable = &RepositoryCreateDto{}
 // RepositoryCreateDto struct for RepositoryCreateDto
 type RepositoryCreateDto struct {
 	// The alias of the repository owner
-	Owner string `json:"owner"`
+	Owner string `json:"owner" yaml:"-"`
 	Url string `json:"url"`
 	Mainline string `json:"mainline"`
 	// the generator used for the initial contents of this repository
 	Generator *string `json:"generator,omitempty"`
 	Configuration *RepositoryConfigurationDto `json:"configuration,omitempty"`
 	// The jira issue to use for committing a change, or the last jira issue used.
-	JiraIssue string `json:"jiraIssue"`
+	JiraIssue string `json:"jiraIssue" yaml:"-"`
 	// A map of arbitrary string labels attached to this repository.
 	Labels map[string]string `json:"labels,omitempty"`
 	AdditionalProperties map[string]interface{}

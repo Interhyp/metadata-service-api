@@ -41,11 +41,11 @@ type ServicePatchDto struct {
 	// Post promote dependencies.
 	PostPromotes *PostPromote `json:"postPromotes,omitempty"`
 	// ISO-8601 UTC date time at which this information was originally committed. When sending an update, include the original timestamp you got so we can detect concurrent updates.
-	TimeStamp string `json:"timeStamp"`
+	TimeStamp string `json:"timeStamp" yaml:"-"`
 	// The git commit hash this information was originally committed under. When sending an update, include the original commitHash you got so we can detect concurrent updates.
-	CommitHash string `json:"commitHash"`
+	CommitHash string `json:"commitHash" yaml:"-"`
 	// The jira issue to use for committing a change, or the last jira issue used.
-	JiraIssue string `json:"jiraIssue"`
+	JiraIssue string `json:"jiraIssue" yaml:"-"`
 	// The current phase of the service's development. A service usually starts off as 'experimental', then becomes 'operational' (i. e. can be reliably used and/or consumed). Once 'deprecated', the service doesn’t guarantee reliable use/consumption any longer.
 	Lifecycle *string `json:"lifecycle,omitempty"`
 	AdditionalProperties map[string]interface{}

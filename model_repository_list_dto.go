@@ -23,7 +23,7 @@ var _ MappedNullable = &RepositoryListDto{}
 type RepositoryListDto struct {
 	Repositories map[string]RepositoryDto `json:"repositories"`
 	// ISO-8601 UTC date time at which the list of repositories was obtained from service-metadata
-	TimeStamp string `json:"timeStamp"`
+	TimeStamp string `json:"timeStamp" yaml:"-"`
 	AdditionalProperties map[string]interface{}
 }
 
