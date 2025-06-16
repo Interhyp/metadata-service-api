@@ -1,3 +1,23 @@
+# ⚠️ DEPRECATED - this repository is no longer maintained
+
+**This repository has been deprecated and is no longer actively maintained.**
+
+## What This Means
+
+- **No new features** will be added
+- **Bug fixes** will not be provided
+- **Security updates** will not be implemented
+- **Issues and pull requests** will not be reviewed or merged
+- **Support** is no longer available
+
+## Recommendations
+
+- **For existing users**: Consider migrating to an actively maintained alternative
+- **For new users**: We strongly recommend using a different solution
+- **For contributors**: Thank you for your past contributions, but we are no longer accepting new ones
+
+---
+
 # Go API client for openapi
 
 Obtain and manage metadata for owners, services, repositories. Please see [README](https://github.com/Interhyp/metadata-service/blob/main/README.md) for details. **CLIENTS MUST READ!**
